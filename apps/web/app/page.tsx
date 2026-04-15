@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import { Navbar } from "@repo/ui/navbar";
@@ -12,26 +12,41 @@ type Task = {
 
 export default function Home() {
   const [task, setTask] = useState("");
-  const [tasks, setTasks] = useState<Task[]>([
-    { text: "Study React", completed: false },
-    { text: "Finish assignment", completed: true },
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  // 🔹 Load tasks from localStorage
+  useEffect(() => {
+    const storedTasks = localStorage.getItem("tasks");
+    if (storedTasks) {
+      setTasks(JSON.parse(storedTasks));
+    }
+  }, []);
+
+  // 🔹 Save tasks to localStorage
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  // ➕ Add task
+  const addTask = () => {
+  console.log("BUTTON CLICKED"); // 👈 add this
+
+  if (task.trim() === "") return;
+
+  setTasks((prev) => [
+    ...prev,
+    { text: task, completed: false },
   ]);
 
-  const addTask = () => {
-    if (task.trim() === "") return;
+  setTask("");
+};
 
-    setTasks((prev) => [
-      ...prev,
-      { text: task, completed: false },
-    ]);
-
-    setTask("");
-  };
-
+  // 🗑 Delete task
   const deleteTask = (index: number) => {
     setTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ✅ Toggle complete
   const toggleTask = (index: number) => {
     setTasks((prev) =>
       prev.map((t, i) =>
@@ -66,40 +81,44 @@ export default function Home() {
       <Card>
         <h3>Task List</h3>
 
-        {tasks.map((t, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "10px",
-              padding: "10px",
-              border: "1px solid lightgray",
-            }}
-          >
-            <span
+        {tasks.length === 0 ? (
+          <p>No tasks yet</p>
+        ) : (
+          tasks.map((t, index) => (
+            <div
+              key={index}
               style={{
-                textDecoration: t.completed ? "line-through" : "none",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "10px",
+                border: "1px solid lightgray",
+                marginBottom: "10px",
               }}
             >
-              {t.text}
-            </span>
-
-            <div>
-              <button
-                onClick={() => toggleTask(index)}
-                style={{ marginRight: "10px" }}
+              <span
+                style={{
+                  textDecoration: t.completed ? "line-through" : "none",
+                }}
               >
-                {t.completed ? "Undo" : "Complete"}
-              </button>
+                {t.text}
+              </span>
 
-              <button onClick={() => deleteTask(index)}>
-                Delete
-              </button>
+              <div>
+                <button
+                  onClick={() => toggleTask(index)}
+                  style={{ marginRight: "10px" }}
+                >
+                  {t.completed ? "Undo" : "Complete"}
+                </button>
+
+                <button onClick={() => deleteTask(index)}>
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </Card>
     </div>
   );

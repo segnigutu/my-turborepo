@@ -29,17 +29,17 @@ export default function Home() {
 
   // Add task
   const addTask = () => {
-    console.log("BUTTON CLICKED"); // debug
+  alert("clicked"); // 👈 VERY important test
 
-    if (task.trim() === "") return;
+  if (task.trim() === "") return;
 
-    setTasks((prev) => [
-      ...prev,
-      { text: task, completed: false },
-    ]);
+  setTasks((prev) => [
+    ...prev,
+    { text: task, completed: false },
+  ]);
 
-    setTask("");
-  };
+  setTask("");
+};
 
   // Delete task
   const deleteTask = (index: number) => {

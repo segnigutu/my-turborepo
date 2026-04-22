@@ -85,7 +85,7 @@ export default function Home() {
               }}
             />
 
-            <Button onClick={addTask}>Add</Button>
+            <button onClick={addTask}>Add</button>
           </div>
         </Card>
 

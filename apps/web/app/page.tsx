@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@repo/ui/card";
 import { Navbar } from "@repo/ui/navbar";
 
@@ -13,6 +13,20 @@ export default function Home() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
 
+  // 🔹 Load tasks from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("tasks");
+    if (stored) {
+      setTasks(JSON.parse(stored));
+    }
+  }, []);
+
+  // 🔹 Save tasks to localStorage
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  // ➕ Add task
   const addTask = () => {
     if (task.trim() === "") return;
 
@@ -20,15 +34,19 @@ export default function Home() {
     setTask("");
   };
 
- const toggleTask = (index: number) => {
-  setTasks((prevTasks) =>
-    prevTasks.map((task, i) =>
-      i === index
-        ? { ...task, completed: !task.completed }
-        : task
-    )
-  );
-};
+  // ✅ Toggle complete
+  const toggleTask = (index: number) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((t, i) =>
+        i === index ? { ...t, completed: !t.completed } : t
+      )
+    );
+  };
+
+  // 🗑 Delete task
+  const deleteTask = (index: number) => {
+    setTasks((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -71,9 +89,18 @@ export default function Home() {
             >
               <span>{t.text}</span>
 
-              <button onClick={() => toggleTask(index)}>
-                {t.completed ? "Undo" : "Done"}
-              </button>
+              <div>
+                <button onClick={() => toggleTask(index)}>
+                  {t.completed ? "Undo" : "Done"}
+                </button>
+
+                <button
+                  onClick={() => deleteTask(index)}
+                  style={{ marginLeft: "10px", color: "red" }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))
         )}

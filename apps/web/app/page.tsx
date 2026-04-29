@@ -12,8 +12,10 @@ type Task = {
 export default function Home() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
-  // 🔹 Load tasks from localStorage
+  // 🔹 Load from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("tasks");
     if (stored) {
@@ -21,7 +23,7 @@ export default function Home() {
     }
   }, []);
 
-  // 🔹 Save tasks to localStorage
+  // 🔹 Save to localStorage
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
@@ -34,10 +36,10 @@ export default function Home() {
     setTask("");
   };
 
-  // ✅ Toggle complete
+  // ✅ Toggle task
   const toggleTask = (index: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((t, i) =>
+    setTasks((prev) =>
+      prev.map((t, i) =>
         i === index ? { ...t, completed: !t.completed } : t
       )
     );
@@ -48,11 +50,23 @@ export default function Home() {
     setTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // 🔍 + 🎯 Filter logic
+  const filteredTasks = tasks.filter((t) => {
+    const matchesSearch = t.text
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    if (filter === "completed") return t.completed && matchesSearch;
+    if (filter === "pending") return !t.completed && matchesSearch;
+
+    return matchesSearch;
+  });
+
   return (
     <div style={{ padding: "20px" }}>
       <Navbar />
 
-      {/* Add Task */}
+      {/* Add Task + Search */}
       <Card>
         <h3>Add Task</h3>
 
@@ -63,18 +77,46 @@ export default function Home() {
           style={{ padding: "10px", marginRight: "10px" }}
         />
 
-        {/* Using native button (stable) */}
         <button onClick={addTask}>Add</button>
+
+        {/* 🔍 Search */}
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search tasks..."
+          style={{
+            padding: "10px",
+            marginTop: "10px",
+            width: "100%",
+          }}
+        />
+
+        {/* 🎯 Filter */}
+        <div style={{ marginTop: "10px" }}>
+          <button onClick={() => setFilter("all")}>All</button>
+          <button
+            onClick={() => setFilter("completed")}
+            style={{ marginLeft: "10px" }}
+          >
+            Completed
+          </button>
+          <button
+            onClick={() => setFilter("pending")}
+            style={{ marginLeft: "10px" }}
+          >
+            Pending
+          </button>
+        </div>
       </Card>
 
       {/* Task List */}
       <Card>
         <h3>Task List</h3>
 
-        {tasks.length === 0 ? (
-          <p>No tasks yet</p>
+        {filteredTasks.length === 0 ? (
+          <p>No tasks found</p>
         ) : (
-          tasks.map((t, index) => (
+          filteredTasks.map((t, index) => (
             <div
               key={index}
               style={{

@@ -15,6 +15,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+
   // 🔹 Load from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("tasks");
@@ -31,7 +34,6 @@ export default function Home() {
   // ➕ Add task
   const addTask = () => {
     if (task.trim() === "") return;
-
     setTasks([...tasks, { text: task, completed: false }]);
     setTask("");
   };
@@ -48,6 +50,26 @@ export default function Home() {
   // 🗑 Delete task
   const deleteTask = (index: number) => {
     setTasks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ✏️ Start edit
+  const startEdit = (index: number, text: string) => {
+    setEditIndex(index);
+    setEditText(text);
+  };
+
+  // 💾 Save edit
+  const saveEdit = () => {
+    if (editIndex === null) return;
+
+    setTasks((prev) =>
+      prev.map((t, i) =>
+        i === editIndex ? { ...t, text: editText } : t
+      )
+    );
+
+    setEditIndex(null);
+    setEditText("");
   };
 
   // 🔍 + 🎯 Filter logic
@@ -129,16 +151,34 @@ export default function Home() {
                 textDecoration: t.completed ? "line-through" : "none",
               }}
             >
-              <span>{t.text}</span>
+              {editIndex === index ? (
+                <input
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                />
+              ) : (
+                <span>{t.text}</span>
+              )}
 
               <div>
-                <button onClick={() => toggleTask(index)}>
+                {editIndex === index ? (
+                  <button onClick={saveEdit}>Save</button>
+                ) : (
+                  <button onClick={() => startEdit(index, t.text)}>
+                    Edit
+                  </button>
+                )}
+
+                <button
+                  onClick={() => toggleTask(index)}
+                  style={{ marginLeft: "5px" }}
+                >
                   {t.completed ? "Undo" : "Done"}
                 </button>
 
                 <button
                   onClick={() => deleteTask(index)}
-                  style={{ marginLeft: "10px", color: "red" }}
+                  style={{ marginLeft: "5px", color: "red" }}
                 >
                   Delete
                 </button>
